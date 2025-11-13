@@ -86,7 +86,7 @@ export const getLessonForTimeSlot = (
   }) || null;
 };
 
-// ⬇️ ДОБАВЛЕНО: Функция для проверки начала урока
+// Функция для проверки начала урока
 export const isLessonStart = (time: Date, lesson: Lesson | null, day: Date): boolean => {
   if (!lesson) return false;
   

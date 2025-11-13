@@ -59,7 +59,7 @@ export const Calendar: React.FC<CalendarProps> = ({
         break;
     }
 
-    // ⬇️ ДОБАВЛЕНО: Убираем границы внутри одного урока
+    // Убираем границы внутри одного урока
     if (lesson) {
       const lessonStart = new Date(lesson.startTime);
       const lessonEnd = new Date(lesson.endTime);
@@ -114,7 +114,7 @@ export const Calendar: React.FC<CalendarProps> = ({
       />
       
       <div className={getGridClassName()}>
-        {/* Time labels column */}
+        {/* Колонка времени */}
         <div className="time-column">
           <div className="time-header"></div>
           {timeSlots.map((time, index) => (
@@ -127,7 +127,7 @@ export const Calendar: React.FC<CalendarProps> = ({
           ))}
         </div>
 
-        {/* Days columns */}
+        {/* Колонки дней */}
         {days.map((day, dayIndex) => (
           <div key={dayIndex} className="day-column">
             {/* Day header */}
@@ -135,7 +135,7 @@ export const Calendar: React.FC<CalendarProps> = ({
               {formatDate(day)}
             </div>
 
-            {/* Time slots */}
+            {/* Слоты календаря */}
             {timeSlots.map((time, timeIndex) => {
               const lesson = getLessonForTimeSlot(time, lessons, day);
               const showStudentName = isLessonStart(time, lesson, day);

@@ -3,7 +3,6 @@ import { Schedule, Lesson } from '../components/Calendar/types';
 import { 
   generateTimeSlots, 
   isTimeInSchedule, 
-  getLessonForTimeSlot,
   addDays 
 } from '../utils/dateUtils';
 

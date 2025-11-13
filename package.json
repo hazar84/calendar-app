@@ -1,10 +1,13 @@
 {
-  "name": "react-calendar",
+  "name": "calendar-app",
   "version": "1.0.0",
+  "homepage": "https://hazar84.github.io/calendar-app",
   "scripts": {
     "dev": "webpack serve --mode development",
     "build": "webpack --mode production",
-    "type-check": "tsc --noEmit"
+    "type-check": "tsc --noEmit",
+    "predeploy": "npm run build",
+    "deploy": "gh-pages -d dist"
   },
   "dependencies": {
     "react": "^18.2.0",
@@ -13,13 +16,14 @@
   "devDependencies": {
     "@types/react": "^18.2.0",
     "@types/react-dom": "^18.2.0",
+    "css-loader": "^6.8.0",
+    "gh-pages": "^6.3.0",
+    "html-webpack-plugin": "^5.5.0",
+    "style-loader": "^3.3.0",
+    "ts-loader": "^9.4.0",
     "typescript": "^5.0.0",
     "webpack": "^5.88.0",
     "webpack-cli": "^5.1.0",
-    "webpack-dev-server": "^4.15.0",
-    "html-webpack-plugin": "^5.5.0",
-    "ts-loader": "^9.4.0",
-    "css-loader": "^6.8.0",
-    "style-loader": "^3.3.0"
+    "webpack-dev-server": "^4.15.0"
   }
 }
