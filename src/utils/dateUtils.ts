@@ -46,26 +46,29 @@ export const generateTimeSlots = (
   return slots;
 };
 
+// ЕДИНЫЙ ПОДХОД для всех функций - конвертация в UTC
+const convertToUTC = (date: Date): Date => {
+  return new Date(date.getTime() - date.getTimezoneOffset() * 60000);
+};
+
 export const isTimeInSchedule = (
   time: Date, 
   schedule: Schedule[], 
   currentDay: Date
 ): boolean => {
+  // Создаем полную дату для проверки
   const checkTime = new Date(currentDay);
   checkTime.setHours(time.getHours(), time.getMinutes(), 0, 0);
+  
+  // Конвертируем checkTime в UTC
+  const checkTimeUTC = convertToUTC(checkTime);
   
   return schedule.some(slot => {
     const slotStart = new Date(slot.startTime);
     const slotEnd = new Date(slot.endTime);
     
-    // Нормализуем даты для сравнения только времени
-    const normalizedSlotStart = new Date(checkTime);
-    normalizedSlotStart.setHours(slotStart.getHours(), slotStart.getMinutes(), 0, 0);
-    
-    const normalizedSlotEnd = new Date(checkTime);
-    normalizedSlotEnd.setHours(slotEnd.getHours(), slotEnd.getMinutes(), 0, 0);
-    
-    return checkTime >= normalizedSlotStart && checkTime < normalizedSlotEnd;
+    // Сравниваем в UTC
+    return checkTimeUTC >= slotStart && checkTimeUTC < slotEnd;
   });
 };
 
@@ -77,24 +80,29 @@ export const getLessonForTimeSlot = (
   const checkTime = new Date(currentDay);
   checkTime.setHours(time.getHours(), time.getMinutes(), 0, 0);
   
+  // Конвертируем checkTime в UTC (ТОТ ЖЕ МЕТОД)
+  const checkTimeUTC = convertToUTC(checkTime);
+  
   return lessons.find(lesson => {
     const lessonStart = new Date(lesson.startTime);
     const lessonEnd = new Date(lesson.endTime);
     
-    // Проверяем, попадает ли текущий временной слот в урок
-    return checkTime >= lessonStart && checkTime < lessonEnd;
+    // Сравниваем в UTC
+    return checkTimeUTC >= lessonStart && checkTimeUTC < lessonEnd;
   }) || null;
 };
 
-// Функция для проверки начала урока
 export const isLessonStart = (time: Date, lesson: Lesson | null, day: Date): boolean => {
   if (!lesson) return false;
   
   const lessonStart = new Date(lesson.startTime);
   const checkTime = new Date(day);
-  checkTime.setHours(time.getHours(), time.getMinutes());
+  checkTime.setHours(time.getHours(), time.getMinutes(), 0, 0);
   
-  return checkTime.getTime() === lessonStart.getTime();
+  // Конвертируем в UTC (ТОТ ЖЕ МЕТОД)
+  const checkTimeUTC = convertToUTC(checkTime);
+  
+  return checkTimeUTC.getTime() === lessonStart.getTime();
 };
 
 export interface Schedule {

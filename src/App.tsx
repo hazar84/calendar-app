@@ -124,7 +124,7 @@ const App: React.FC = () => {
 
         <Calendar
           view={currentView}
-          startDate={new Date('2025-08-25')}
+          startDate={new Date('2025-08-23')}
           schedule={schedule}
           lessons={lessons}
           onSlotSelect={handleSlotSelect}

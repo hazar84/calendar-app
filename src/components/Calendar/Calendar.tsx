@@ -1,8 +1,14 @@
+// Calendar.tsx
 import React from 'react';
 import { CalendarProps, Lesson } from './types';
 import { useCalendar } from '../../hooks/useCalendar';
 import { CalendarNavigation } from './CalendarNavigation';
-import { formatTime, formatDate, getLessonForTimeSlot } from '../../utils/dateUtils';
+import { 
+  formatTime, 
+  formatDate, 
+  getLessonForTimeSlot, 
+  isLessonStart 
+} from '../../utils/dateUtils';
 
 export const Calendar: React.FC<CalendarProps> = ({
   view = 'week',
@@ -17,34 +23,42 @@ export const Calendar: React.FC<CalendarProps> = ({
     days,
     navigate,
     getSlotType
-  } = useCalendar(startDate, schedule, lessons, view);
+  } = useCalendar(startDate, schedule, view);
 
   const handleSlotClick = (time: Date, day: Date, lesson: Lesson | null) => {
-    const slotType = getSlotType(time, day, lesson);
+  const slotType = getSlotType(time, day, lesson);
+  
+  if (slotType === 'blocked') return;
+  
+  // Правильное создание даты с учетом временных зон
+  const slotStart = new Date(day);
+  slotStart.setHours(time.getHours(), time.getMinutes(), 0, 0);
+  
+  const slotEnd = new Date(slotStart);
+  slotEnd.setMinutes(slotEnd.getMinutes() + 30);
+  
+  if (lesson) {
+    // Для уроков используем время из данных урока
+    const lessonStart = new Date(lesson.startTime);
+    const lessonEnd = new Date(lesson.endTime);
     
-    if (slotType === 'blocked') return;
+    // Конвертируем в локальное время для отображения
+    const localStart = new Date(lessonStart.getTime() + lessonStart.getTimezoneOffset() * 60000);
+    const localEnd = new Date(lessonEnd.getTime() + lessonEnd.getTimezoneOffset() * 60000);
     
-    const slotStart = new Date(day);
-    slotStart.setHours(time.getHours(), time.getMinutes());
-    
-    const slotEnd = new Date(slotStart);
-    slotEnd.setMinutes(slotEnd.getMinutes() + 30);
-    
-    if (lesson) {
-      alert(`Урок с ${lesson.student}\nВремя: ${formatTime(new Date(lesson.startTime))} - ${formatTime(new Date(lesson.endTime))}\nПродолжительность: ${lesson.duration} минут`);
-    } else if (slotType === 'available') {
-      if (onSlotSelect) {
-        onSlotSelect({ startTime: slotStart, endTime: slotEnd });
-      }
-      alert(`Выбран слот: ${formatTime(slotStart)} - ${formatTime(slotEnd)}`);
+    alert(`Урок с ${lesson.student}\nВремя: ${formatTime(localStart)} - ${formatTime(localEnd)}\nПродолжительность: ${lesson.duration} минут`);
+  } else if (slotType === 'available') {
+    if (onSlotSelect) {
+      onSlotSelect({ startTime: slotStart, endTime: slotEnd });
     }
-  };
+    alert(`Выбран слот: ${formatTime(slotStart)} - ${formatTime(slotEnd)}`);
+  }
+};
 
   const getSlotClassName = (time: Date, day: Date, lesson: Lesson | null): string => {
     let classNames = 'calendar-slot';
     const slotType = getSlotType(time, day, lesson);
     
-    // Добавляем класс типа слота
     switch (slotType) {
       case 'available':
         classNames += ' slot-available';
@@ -63,33 +77,28 @@ export const Calendar: React.FC<CalendarProps> = ({
     if (lesson) {
       const lessonStart = new Date(lesson.startTime);
       const lessonEnd = new Date(lesson.endTime);
+      
+      // Создаем полную дату для текущего слота
       const currentTime = new Date(day);
-      currentTime.setHours(time.getHours(), time.getMinutes());
+      currentTime.setHours(time.getHours(), time.getMinutes(), 0, 0);
+      
+      // Используем ту же конвертацию, что и в isLessonStart
+      const currentTimeUTC = new Date(currentTime.getTime() - currentTime.getTimezoneOffset() * 60000);
       
       // Если это не начало урока - убираем верхнюю границу
-      if (currentTime.getTime() !== lessonStart.getTime()) {
+      if (currentTimeUTC.getTime() !== lessonStart.getTime()) {
         classNames += ' no-top-border';
       }
       
       // Если это не конец урока - убираем нижнюю границу
-      const nextSlotTime = new Date(currentTime);
+      const nextSlotTime = new Date(currentTimeUTC);
       nextSlotTime.setMinutes(nextSlotTime.getMinutes() + 30);
-      if (nextSlotTime.getTime() < lessonEnd.getTime()) {
+      if (nextSlotTime.getTime() <= lessonEnd.getTime()) {
         classNames += ' no-bottom-border';
       }
     }
     
     return classNames;
-  };
-
-  const isLessonStart = (time: Date, lesson: Lesson | null, day: Date): boolean => {
-    if (!lesson) return false;
-    
-    const lessonStart = new Date(lesson.startTime);
-    const checkTime = new Date(day);
-    checkTime.setHours(time.getHours(), time.getMinutes());
-    
-    return checkTime.getTime() === lessonStart.getTime();
   };
 
   const getGridClassName = (): string => {
@@ -138,7 +147,7 @@ export const Calendar: React.FC<CalendarProps> = ({
             {/* Слоты календаря */}
             {timeSlots.map((time, timeIndex) => {
               const lesson = getLessonForTimeSlot(time, lessons, day);
-              const showStudentName = isLessonStart(time, lesson, day);
+              const showStudentName = isLessonStart(time, lesson, day); // Используется из dateUtils
               
               return (
                 <div
